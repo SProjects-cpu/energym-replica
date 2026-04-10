@@ -2,12 +2,13 @@ import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import GenericPage from '@/components/GenericPage';
 
-export default function DynamicPage({ params }) {
+export default async function DynamicPage({ params }) {
+  const resolvedParams = await params;
   return (
     <>
       <Header />
       <main>
-        <GenericPage params={params} type="Page" />
+        <GenericPage slug={resolvedParams?.slug} type="Page" />
       </main>
       <Footer />
     </>

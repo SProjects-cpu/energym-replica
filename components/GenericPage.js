@@ -1,8 +1,11 @@
 import Link from 'next/link';
 
-export default function GenericPage({ params, type = 'Page' }) {
+export default function GenericPage({ slug, type = 'Page' }) {
+  // Use a fallback in case slug is undefined or empty
+  const safeSlug = slug || 'unknown-page';
+  
   // Convert slug to readable title (e.g., 'regen-for-business' -> 'Regen For Business')
-  const title = params.slug
+  const title = safeSlug
     .split('-')
     .map(word => word.charAt(0).toUpperCase() + word.slice(1))
     .join(' ');
