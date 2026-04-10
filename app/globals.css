@@ -1308,3 +1308,151 @@ p {
   white-space: nowrap;
   border: 0;
 }
+
+/* ========================================
+   MEGA MENU DETAILS & SUMMARY
+   ======================================== */
+.nav-details summary {
+  list-style: none; /* Hide default arrow */
+}
+.nav-details summary::-webkit-details-marker {
+  display: none;
+}
+
+.mega-menu-content {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  width: 100vw;
+  background: var(--white);
+  color: var(--black);
+  padding: 40px 0;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+  display: none;
+}
+
+.nav-details[open] .mega-menu-content {
+  display: block;
+}
+
+/* Ensure header becomes solid when menu open */
+.header-wrapper.menu-open {
+  background: var(--black) !important;
+}
+
+.mega-menu-wrap {
+  display: flex;
+  justify-content: space-between;
+  max-width: var(--page-width);
+  margin: 0 auto;
+  padding: 0 var(--page-padding);
+  gap: 40px;
+}
+
+.mega-menu__text {
+  flex: 0 0 300px;
+}
+
+.mega-menu__text h3 {
+  font-size: 2.4rem;
+  color: var(--black);
+  margin-bottom: 24px;
+}
+
+.nav-socials h5 {
+  font-family: var(--ff3);
+  font-size: 1.2rem;
+  font-weight: 500;
+  color: #666;
+  text-transform: uppercase;
+  margin-bottom: 12px;
+  letter-spacing: 0.1em;
+}
+
+.social-icons {
+  display: flex;
+  gap: 16px;
+}
+
+.social-icons a {
+  color: var(--black);
+  opacity: 0.7;
+}
+
+.social-icons a:hover {
+  opacity: 1;
+}
+
+.social-icons svg {
+  width: 20px;
+  height: 20px;
+}
+
+.mega-menu__links {
+  display: flex;
+  gap: 20px;
+  flex: 1;
+  justify-content: flex-end;
+}
+
+.mega-menu__card {
+  position: relative;
+  width: 200px;
+  height: 200px;
+  overflow: hidden;
+  border-radius: 4px;
+}
+
+.mega-menu__card img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.4s ease;
+  filter: brightness(0.6);
+}
+
+.mega-menu__card:hover img {
+  transform: scale(1.05);
+  filter: brightness(0.4);
+}
+
+.mega-menu__card span {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-family: var(--ff);
+  font-size: 1.6rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--white);
+  text-align: center;
+  width: 90%;
+  pointer-events: none;
+}
+
+/* ========================================
+   GENERIC PAGE TEMPLATE
+   ======================================== */
+.page-hero {
+  padding: 160px var(--page-padding) 60px;
+  background: var(--black);
+  text-align: center;
+  min-height: 40vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+}
+
+.page-hero__title {
+  font-size: var(--fs-h2);
+  margin-bottom: 16px;
+}
+
+.page-content {
+  padding: var(--section-padding) var(--page-padding);
+  max-width: var(--page-width);
+  margin: 0 auto;
+  min-height: 50vh;
+}
