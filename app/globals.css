@@ -282,12 +282,12 @@ p {
    HEADER
    ======================================== */
 .header-wrapper {
-  position: fixed;
-  top: 0;
+  position: absolute;
+  top: 40px; /* Accommodate announcement bar */
   left: 0;
   right: 0;
   z-index: 1000;
-  transition: transform 0.4s ease, background 0.3s ease;
+  transition: background 0.3s ease, transform 0.4s ease;
 }
 
 .header-wrapper.transparent {
@@ -296,6 +296,8 @@ p {
 
 .header-wrapper.solid {
   background: var(--black);
+  position: fixed;
+  top: 0;
 }
 
 .header-wrapper.hidden {
