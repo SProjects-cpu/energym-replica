@@ -141,9 +141,9 @@ export default function FitnessQuiz() {
           <h2 className="step-question">What's your experience level?</h2>
           <p className="step-subtitle">Be honest — it helps us set realistic targets.</p>
           <div className="chips-group" data-field="experience">
-            <button className="chip" data-value="beginner"><span className="chip-icon">🌱</span> Beginner<br><small style={{ color: "#9ca3af", fontWeight: "400" }}>Less than 1 year</small></button>
-            <button className="chip" data-value="intermediate"><span className="chip-icon">🏋️</span> Intermediate<br><small style={{ color: "#9ca3af", fontWeight: "400" }}>1–3 years</small></button>
-            <button className="chip" data-value="advanced"><span className="chip-icon">🏆</span> Advanced<br><small style={{ color: "#9ca3af", fontWeight: "400" }}>3+ years</small></button>
+            <button className="chip" data-value="beginner"><span className="chip-icon">🌱</span> Beginner<br /><small style={{ color: "#9ca3af", fontWeight: "400" }}>Less than 1 year</small></button>
+            <button className="chip" data-value="intermediate"><span className="chip-icon">🏋️</span> Intermediate<br /><small style={{ color: "#9ca3af", fontWeight: "400" }}>1–3 years</small></button>
+            <button className="chip" data-value="advanced"><span className="chip-icon">🏆</span> Advanced<br /><small style={{ color: "#9ca3af", fontWeight: "400" }}>3+ years</small></button>
           </div>
           <div className="validation-msg" id="val-7"></div>
         </div>
