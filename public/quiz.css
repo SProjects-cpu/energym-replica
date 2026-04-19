@@ -109,9 +109,9 @@ body.quiz-page {
 /* --- Quiz Container --- */
 .quiz-container {
   width: 100%;
-  max-width: 600px;
+  max-width: 700px;
   margin: 0;
-  padding: 0 1rem;
+  padding: 0 4rem;
   position: relative;
   z-index: 10;
   pointer-events: auto; /* Enable clicks inside */
@@ -199,19 +199,18 @@ body.quiz-page {
 
 /* --- Card --- */
 .quiz-card {
-  background: var(--card-bg);
-  border-radius: var(--card-radius);
-  border: 1px solid var(--card-border);
-  box-shadow: var(--card-shadow);
-  backdrop-filter: blur(24px);
-  -webkit-backdrop-filter: blur(24px);
-  overflow: hidden;
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  overflow: visible;
   position: relative;
 }
 
 .quiz-card-inner {
-  padding: 2.5rem 2.5rem 2rem;
-  min-height: 380px;
+  padding: 0;
+  min-height: 400px;
   display: flex;
   flex-direction: column;
 }
@@ -282,23 +281,23 @@ body.quiz-page {
   justify-content: center;
   gap: 0.4rem;
   padding: 0.9rem 1.8rem;
-  background: var(--chip-bg);
-  color: var(--text-dark);
-  border: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--text-white);
+  border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: var(--chip-radius);
-  font-size: 0.95rem;
-  font-weight: 400;
+  font-size: 1.1rem;
+  font-weight: 500;
   font-family: var(--font-primary);
   cursor: pointer;
-  transition: all var(--transition-fast);
+  transition: all var(--transition-med);
   user-select: none;
   white-space: nowrap;
 }
 
 .chip:hover {
-  background: var(--chip-hover);
-  border-color: var(--border-hover);
-  transform: translateY(-1px);
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.3);
+  transform: translateY(-2px);
 }
 
 .chip.selected {
@@ -482,15 +481,15 @@ input[type="range"]::-moz-range-thumb {
 }
 
 .btn-back {
-  background: transparent;
+  background: rgba(255, 255, 255, 0.05);
   color: var(--text-muted);
-  border: 1.5px solid var(--border);
+  border: 1px solid transparent;
 }
 
 .btn-back:hover {
-  color: var(--text-dark);
-  border-color: var(--border-hover);
-  background: #f9fafb;
+  color: var(--text-white);
+  border-color: rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.1);
 }
 
 .btn-back:disabled {
