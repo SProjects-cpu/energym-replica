@@ -1,335 +1,433 @@
 'use client';
 
-import React from 'react';
-import Script from 'next/script';
+import React, { useState, useCallback, useMemo } from 'react';
 
-export default function FitnessQuiz() {
+// ============================================
+// QUIZ DATA
+// ============================================
+const STEPS = [
+  {
+    id: 'goal',
+    question: 'What is your fitness goal?',
+    subtitle: 'Select the goal that best describes what you want to achieve.',
+    type: 'single',
+    options: ['Lose weight', 'Build muscle', 'Get fit', 'Improve health'],
+  },
+  {
+    id: 'experience',
+    question: 'What is your experience level?',
+    subtitle: 'Be honest — this helps us tailor your program.',
+    type: 'single',
+    options: ['Beginner', 'Intermediate', 'Advanced'],
+  },
+  {
+    id: 'frequency',
+    question: 'How many days per week can you train?',
+    subtitle: 'Consistency matters more than intensity.',
+    type: 'number',
+    min: 1,
+    max: 7,
+    unit: 'days / week',
+    defaultValue: 3,
+  },
+  {
+    id: 'struggles',
+    question: 'What are your biggest struggles?',
+    subtitle: 'Select all that apply.',
+    type: 'multi',
+    options: ['Staying consistent', 'Nutrition planning', 'Lack of motivation', 'Time management', 'Not seeing results', 'Injuries'],
+  },
+  {
+    id: 'height',
+    question: 'What is your height?',
+    subtitle: 'Used to calculate your body metrics.',
+    type: 'slider',
+    min: 140,
+    max: 220,
+    unit: 'cm',
+    defaultValue: 170,
+  },
+  {
+    id: 'weight',
+    question: 'What is your current weight?',
+    subtitle: 'This helps us project your transformation.',
+    type: 'slider',
+    min: 40,
+    max: 200,
+    unit: 'kg',
+    step: 0.5,
+    defaultValue: 70,
+  },
+  {
+    id: 'targetWeight',
+    question: 'What is your target weight?',
+    subtitle: 'Set a realistic goal for the next 3 months.',
+    type: 'slider',
+    min: 40,
+    max: 200,
+    unit: 'kg',
+    step: 0.5,
+    defaultValue: 65,
+  },
+  {
+    id: 'age',
+    question: 'How old are you?',
+    subtitle: 'Age affects metabolism and recovery.',
+    type: 'number',
+    min: 14,
+    max: 80,
+    unit: 'years',
+    defaultValue: 25,
+  },
+  {
+    id: 'gender',
+    question: 'What is your gender?',
+    subtitle: 'Used for accurate calorie and macro calculations.',
+    type: 'single',
+    options: ['Male', 'Female'],
+  },
+  {
+    id: 'budget',
+    question: 'What is your monthly budget?',
+    subtitle: 'We will recommend options that fit your budget.',
+    type: 'single',
+    options: ['Under $50', '$50 - $100', '$100 - $200', '$200+'],
+  },
+];
+
+// ============================================
+// RESULTS CALCULATOR
+// ============================================
+function calculateResults(answers) {
+  const weight = answers.weight || 70;
+  const targetWeight = answers.targetWeight || 65;
+  const height = answers.height || 170;
+  const age = answers.age || 25;
+  const gender = answers.gender || 'Male';
+  const frequency = answers.frequency || 3;
+
+  const bmr = gender === 'Male'
+    ? 10 * weight + 6.25 * height - 5 * age + 5
+    : 10 * weight + 6.25 * height - 5 * age - 161;
+
+  const activityMultiplier = 1.2 + (frequency * 0.075);
+  const tdee = Math.round(bmr * activityMultiplier);
+  const deficit = weight > targetWeight ? 500 : (weight < targetWeight ? -300 : 0);
+  const dailyCal = Math.round(tdee - deficit);
+
+  const weightDiff = weight - targetWeight;
+  const weeklyChange = weightDiff > 0 ? 0.5 : (weightDiff < 0 ? -0.3 : 0);
+  const bfEstimate = gender === 'Male' ? 18 : 25;
+
+  const protein = Math.round(weight * 2.0);
+  const fat = Math.round(dailyCal * 0.25 / 9);
+  const carbs = Math.round((dailyCal - protein * 4 - fat * 9) / 4);
+
+  const milestones = [
+    { week: 4, label: 'Foundation phase', weight: Math.round((weight - weeklyChange * 4) * 10) / 10 },
+    { week: 8, label: 'Progress phase', weight: Math.round((weight - weeklyChange * 8) * 10) / 10 },
+    { week: 12, label: 'Goal reached', weight: Math.round((weight - weeklyChange * 12) * 10) / 10 },
+  ];
+
+  return { dailyCal, protein, carbs, fat, bfEstimate, milestones, weight, targetWeight };
+}
+
+// ============================================
+// SUB-COMPONENTS
+// ============================================
+
+function ProgressBar({ current, total }) {
+  const pct = ((current + 1) / total) * 100;
   return (
-    <>
-      <link rel="stylesheet" href="/quiz.css" />
-      
-      <div className="quiz-hero-wrapper">
-        {/* Ghost Background Typography */}
-        <div className="ghost-text">STRIVER</div>
-        
-<div className="ghost-text">STRIVER</div>
-
-  <div className="quiz-container">
-
-    {/* Header */}
-    <div className="quiz-header">
-      <div className="quiz-logo">
-        <span className="logo-accent">STRIVER</span> FITNESS QUIZ
+    <div className="sq-progress">
+      <div className="sq-progress__track">
+        <div className="sq-progress__fill" style={{ width: `${pct}%` }} />
       </div>
-      <a href="energym_home.html" className="quiz-back-home">← Back to Home</a>
-    </div>
-
-    {/* Progress Bar */}
-    <div className="quiz-progress" id="quizProgress">
-      <div className="progress-info">
-        <span className="step-label" id="stepLabel">STEP 1</span>
-        <span className="step-count" id="stepCount">1 / 10</span>
-      </div>
-      <div className="progress-bar-track">
-        <div className="progress-bar-fill" id="progressFill"></div>
+      <div className="sq-progress__label">
+        <span>{String(current + 1).padStart(2, '0')} / {String(total).padStart(2, '0')}</span>
       </div>
     </div>
+  );
+}
 
-    {/* Quiz Card */}
-    <div className="quiz-card" id="quizCard">
+function ChipSelector({ options, selected, onSelect, multi }) {
+  return (
+    <div className="sq-chips">
+      {options.map((opt) => {
+        const isSelected = multi
+          ? (selected || []).includes(opt)
+          : selected === opt;
+        return (
+          <button
+            key={opt}
+            className={`sq-chip ${isSelected ? 'sq-chip--active' : ''}`}
+            onClick={() => onSelect(opt)}
+            type="button"
+          >
+            {opt}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
 
-      {/* Generating Overlay */}
-      <div className="generating-overlay" id="generatingOverlay">
-        <div className="spinner"></div>
-        <div className="generating-text">Generating Your Timeline</div>
-        <div className="generating-sub">Analyzing your data...</div>
+function NumberInput({ value, onChange, min, max, unit }) {
+  return (
+    <div className="sq-number">
+      <button
+        className="sq-number__btn"
+        onClick={() => onChange(Math.max(min, value - 1))}
+        type="button"
+      >
+        −
+      </button>
+      <div className="sq-number__display">
+        <span className="sq-number__value">{value}</span>
+        <span className="sq-number__unit">{unit}</span>
       </div>
+      <button
+        className="sq-number__btn"
+        onClick={() => onChange(Math.min(max, value + 1))}
+        type="button"
+      >
+        +
+      </button>
+    </div>
+  );
+}
 
-      {/* STEP 1: Fitness Goal */}
-      <div className="quiz-card-inner">
-        <div className="step active" id="step-1" data-step="1">
-          <h2 className="step-question">What's your fitness goal?</h2>
-          <p className="step-subtitle">Choose the goal that best matches what you want to achieve.</p>
-          <div className="chips-group" data-field="goal">
-            <button className="chip" data-value="fat_loss"><span className="chip-icon">🔥</span> Fat Loss</button>
-            <button className="chip" data-value="muscle_gain"><span className="chip-icon">💪</span> Muscle Gain</button>
-            <button className="chip" data-value="recomposition"><span className="chip-icon">⚡</span> Body Recomp</button>
-            <button className="chip" data-value="athletic"><span className="chip-icon">🏃</span> Athletic Performance</button>
-            <button className="chip" data-value="general"><span className="chip-icon">❤️</span> General Fitness</button>
-          </div>
-          <div className="validation-msg" id="val-1"></div>
-        </div>
-
-        {/* STEP 2: Gender */}
-        <div className="step" id="step-2" data-step="2">
-          <h2 className="step-question">What's your gender?</h2>
-          <p className="step-subtitle">This helps us calculate accurate projections.</p>
-          <div className="chips-group" data-field="gender">
-            <button className="chip" data-value="male"><span className="chip-icon">♂️</span> Male</button>
-            <button className="chip" data-value="female"><span className="chip-icon">♀️</span> Female</button>
-            <button className="chip" data-value="other"><span className="chip-icon">⚧</span> Other</button>
-          </div>
-          <div className="validation-msg" id="val-2"></div>
-        </div>
-
-        {/* STEP 3: Age */}
-        <div className="step" id="step-3" data-step="3">
-          <h2 className="step-question">How old are you?</h2>
-          <p className="step-subtitle">Age affects metabolism and training capacity.</p>
-          <div className="number-input-group">
-            <button className="number-btn" data-action="decrement" data-target="age">−</button>
-            <div>
-              <span className="number-display" id="ageDisplay">25</span>
-              <span className="number-unit">years</span>
-            </div>
-            <button className="number-btn" data-action="increment" data-target="age">+</button>
-          </div>
-          <div className="validation-msg" id="val-3"></div>
-        </div>
-
-        {/* STEP 4: Height */}
-        <div className="step" id="step-4" data-step="4">
-          <h2 className="step-question">What's your height?</h2>
-          <div className="slider-group">
-            <div className="slider-value-display">
-              <span className="slider-value" id="heightDisplay">170</span>
-              <span className="slider-unit">cm</span>
-            </div>
-            <div className="slider-range">
-              <span className="slider-min">140 cm</span>
-              <input type="range" id="heightSlider" min="140" max="220" defaultValue="170" step="1" />
-              <span className="slider-max">220 cm</span>
-            </div>
-          </div>
-        </div>
-
-        {/* STEP 5: Current Weight */}
-        <div className="step" id="step-5" data-step="5">
-          <h2 className="step-question">What's your current weight?</h2>
-          <div className="slider-group">
-            <div className="slider-value-display">
-              <span className="slider-value" id="weightDisplay">70</span>
-              <span className="slider-unit">kg</span>
-            </div>
-            <div className="slider-range">
-              <span className="slider-min">40 kg</span>
-              <input type="range" id="weightSlider" min="40" max="200" defaultValue="70" step="0.5" />
-              <span className="slider-max">200 kg</span>
-            </div>
-          </div>
-        </div>
-
-        {/* STEP 6: Target Weight */}
-        <div className="step" id="step-6" data-step="6">
-          <h2 className="step-question">What's your target weight?</h2>
-          <p className="step-subtitle">Where do you want to be in 3 months?</p>
-          <div className="slider-group">
-            <div className="slider-value-display">
-              <span className="slider-value" id="targetWeightDisplay">65</span>
-              <span className="slider-unit">kg</span>
-            </div>
-            <div className="slider-range">
-              <span className="slider-min">40 kg</span>
-              <input type="range" id="targetWeightSlider" min="40" max="200" defaultValue="65" step="0.5" />
-              <span className="slider-max">200 kg</span>
-            </div>
-          </div>
-        </div>
-
-        {/* STEP 7: Experience Level */}
-        <div className="step" id="step-7" data-step="7">
-          <h2 className="step-question">What's your experience level?</h2>
-          <p className="step-subtitle">Be honest — it helps us set realistic targets.</p>
-          <div className="chips-group" data-field="experience">
-            <button className="chip" data-value="beginner"><span className="chip-icon">🌱</span> Beginner<br /><small style={{ color: "#9ca3af", fontWeight: "400" }}>Less than 1 year</small></button>
-            <button className="chip" data-value="intermediate"><span className="chip-icon">🏋️</span> Intermediate<br /><small style={{ color: "#9ca3af", fontWeight: "400" }}>1–3 years</small></button>
-            <button className="chip" data-value="advanced"><span className="chip-icon">🏆</span> Advanced<br /><small style={{ color: "#9ca3af", fontWeight: "400" }}>3+ years</small></button>
-          </div>
-          <div className="validation-msg" id="val-7"></div>
-        </div>
-
-        {/* STEP 8: Training Days */}
-        <div className="step" id="step-8" data-step="8">
-          <h2 className="step-question">How many days per week can you train?</h2>
-          <div className="chips-group" data-field="trainingDays">
-            <button className="chip" data-value="2">2 days</button>
-            <button className="chip" data-value="3">3 days</button>
-            <button className="chip" data-value="4">4 days</button>
-            <button className="chip" data-value="5">5 days</button>
-            <button className="chip" data-value="6">6 days</button>
-            <button className="chip" data-value="7">7 days</button>
-          </div>
-          <div className="validation-msg" id="val-8"></div>
-        </div>
-
-        {/* STEP 9: Session Duration */}
-        <div className="step" id="step-9" data-step="9">
-          <h2 className="step-question">How long per workout session?</h2>
-          <div className="chips-group" data-field="sessionDuration">
-            <button className="chip" data-value="30">30 min</button>
-            <button className="chip" data-value="45">45 min</button>
-            <button className="chip" data-value="60">60 min</button>
-            <button className="chip" data-value="75">75 min</button>
-            <button className="chip" data-value="90">90 min</button>
-          </div>
-          <div className="validation-msg" id="val-9"></div>
-        </div>
-
-        {/* STEP 10: Dietary Preferences */}
-        <div className="step" id="step-10" data-step="10">
-          <h2 className="step-question">Any dietary preferences?</h2>
-          <p className="step-subtitle">Select all that apply.</p>
-          <div className="chips-group" data-field="diet" data-multi="true">
-            <button className="chip multi" data-value="none">🍽️ No Restrictions</button>
-            <button className="chip multi" data-value="vegetarian">🥬 Vegetarian</button>
-            <button className="chip multi" data-value="vegan">🌿 Vegan</button>
-            <button className="chip multi" data-value="keto">🥩 Keto</button>
-            <button className="chip multi" data-value="halal">☪️ Halal</button>
-            <button className="chip multi" data-value="gluten_free">🌾 Gluten-Free</button>
-            <button className="chip multi" data-value="dairy_free">🥛 Dairy-Free</button>
-          </div>
-          <div className="validation-msg" id="val-10"></div>
-        </div>
+function SliderInput({ value, onChange, min, max, unit, step = 1 }) {
+  return (
+    <div className="sq-slider">
+      <div className="sq-slider__display">
+        <span className="sq-slider__value">{value}</span>
+        <span className="sq-slider__unit">{unit}</span>
       </div>
-
-      {/* Navigation */}
-      <div className="quiz-nav" id="quizNav">
-        <button className="btn-back" id="btnBack" disabled>
-          ← Back
-        </button>
-        <button className="btn-next" id="btnNext">
-          Next <span className="arrow">→</span>
-        </button>
-        <button className="btn-submit" id="btnSubmit" style={{ display: "none" }}>
-          Generate My Timeline 🚀
-        </button>
-      </div>
-
-      {/* RESULTS */}
-      <div className="results-container" id="resultsContainer">
-
-        <div className="results-header">
-          <h2>Your 3-Month Fitness Timeline</h2>
-          <p>Here's your personalized projection based on your answers.</p>
-        </div>
-
-        {/* Summary Metrics */}
-        <div className="metrics-row">
-          <div className="metric-card">
-            <div className="metric-label">Current</div>
-            <div className="metric-value" id="resCurrentWeight">70</div>
-            <div className="metric-unit">kg</div>
-          </div>
-          <div className="metric-card highlight">
-            <div className="metric-label">Target</div>
-            <div className="metric-value green" id="resTargetWeight">65</div>
-            <div className="metric-unit">kg</div>
-          </div>
-          <div className="metric-card">
-            <div className="metric-label">Body Fat Est.</div>
-            <div className="metric-value" id="resBodyFat">18.5</div>
-            <div className="metric-unit">%</div>
-          </div>
-        </div>
-
-        {/* Milestones */}
-        <div className="milestones-row">
-          <div className="milestone">
-            <div className="milestone-week">Week 4</div>
-            <div className="milestone-value" id="milestone4">68.2 kg</div>
-            <div className="milestone-desc">Foundation phase</div>
-          </div>
-          <div className="milestone">
-            <div className="milestone-week">Week 8</div>
-            <div className="milestone-value" id="milestone8">66.5 kg</div>
-            <div className="milestone-desc">Progress phase</div>
-          </div>
-          <div className="milestone">
-            <div className="milestone-week">Week 12</div>
-            <div className="milestone-value" id="milestone12">65.0 kg</div>
-            <div className="milestone-desc">Goal reached</div>
-          </div>
-        </div>
-
-        {/* Chart */}
-        <div className="chart-section">
-          <h3 className="chart-title">Projected Progress</h3>
-          <div className="chart-wrapper">
-            <canvas className="chart-canvas" id="timelineChart" />
-          </div>
-          <div className="chart-legend">
-            <span className="legend-item"><span className="legend-dot weight"></span> Weight (kg)</span>
-            <span className="legend-item"><span className="legend-dot bodyfat"></span> Body Fat (%)</span>
-          </div>
-        </div>
-
-        {/* Calorie Estimate */}
-        <div className="calorie-box">
-          <div className="calorie-card">
-            <div className="calorie-info">
-              <h4>Daily Calorie Target</h4>
-              <div>
-                <span className="calorie-number" id="resDailyCalories">2,150</span>
-                <span className="calorie-unit">kcal / day</span>
-              </div>
-            </div>
-            <div style={{ "font-size": "2.5rem" }}>🔥</div>
-          </div>
-        </div>
-
-        {/* Breakdown */}
-        <div className="breakdown-grid">
-          <div className="breakdown-panel">
-            <h4>Macro Split</h4>
-            <div className="macro-bar" id="macroBar">
-              <div className="protein" style={{ width: "35%" }}></div>
-              <div className="carbs" style={{ width: "35%" }}></div>
-              <div className="fat" style={{ width: "30%" }}></div>
-            </div>
-            <div className="macro-labels" id="macroLabels">
-              <div className="macro-label">
-                <span className="dot" style={{ background: "var(--accent)" }}></span>
-                <span className="name">Protein</span>
-                <span className="value" id="macroProtein">35%</span>
-              </div>
-              <div className="macro-label">
-                <span className="dot" style={{ background: "#3b82f6" }}></span>
-                <span className="name">Carbs</span>
-                <span className="value" id="macroCarbs">35%</span>
-              </div>
-              <div className="macro-label">
-                <span className="dot" style={{ background: "#f59e0b" }}></span>
-                <span className="name">Fat</span>
-                <span className="value" id="macroFat">30%</span>
-              </div>
-            </div>
-          </div>
-
-          <div className="breakdown-panel">
-            <h4>Weekly Schedule</h4>
-            <ul className="workout-list" id="workoutList">
-              {/* Filled by JS */}
-            </ul>
-          </div>
-        </div>
-
-        {/* CTA */}
-        <div className="cta-section">
-          <a href="#" className="cta-btn" id="ctaDownload">
-            🚀 Start Your Journey with Striver
-          </a>
-          <button className="retake-link" id="retakeBtn">↻ Retake Quiz</button>
-        </div>
-
+      <div className="sq-slider__track-wrap">
+        <span className="sq-slider__bound">{min}</span>
+        <input
+          type="range"
+          className="sq-slider__input"
+          min={min}
+          max={max}
+          step={step}
+          value={value}
+          onChange={(e) => onChange(Number(e.target.value))}
+        />
+        <span className="sq-slider__bound">{max}</span>
       </div>
     </div>
+  );
+}
 
-  </div>
+function Results({ data, onRestart }) {
+  return (
+    <div className="sq-results">
+      <h2 className="sq-results__title">Your 3-Month Fitness Timeline</h2>
+      <p className="sq-results__subtitle">Here is your personalized projection based on your answers.</p>
 
+      <div className="sq-metrics">
+        <div className="sq-metric">
+          <span className="sq-metric__label">Current</span>
+          <span className="sq-metric__value">{data.weight}</span>
+          <span className="sq-metric__unit">kg</span>
+        </div>
+        <div className="sq-metric sq-metric--accent">
+          <span className="sq-metric__label">Target</span>
+          <span className="sq-metric__value">{data.targetWeight}</span>
+          <span className="sq-metric__unit">kg</span>
+        </div>
+        <div className="sq-metric">
+          <span className="sq-metric__label">Body Fat Est.</span>
+          <span className="sq-metric__value">{data.bfEstimate}</span>
+          <span className="sq-metric__unit">%</span>
+        </div>
       </div>
-      
-      {/* Load external logic script seamlessly */}
-      <Script src="/quiz.js" strategy="lazyOnload" />
-    </>
+
+      <div className="sq-milestones">
+        {data.milestones.map((m) => (
+          <div key={m.week} className="sq-milestone">
+            <span className="sq-milestone__week">Week {m.week}</span>
+            <span className="sq-milestone__label">{m.label}</span>
+          </div>
+        ))}
+      </div>
+
+      <div className="sq-macros">
+        <h3 className="sq-macros__title">Daily Nutrition Target</h3>
+        <div className="sq-macros__bar">
+          <div className="sq-macros__segment sq-macros__segment--protein" style={{ width: `${Math.round(data.protein * 4 / data.dailyCal * 100)}%` }} />
+          <div className="sq-macros__segment sq-macros__segment--carbs" style={{ width: `${Math.round(data.carbs * 4 / data.dailyCal * 100)}%` }} />
+          <div className="sq-macros__segment sq-macros__segment--fat" style={{ width: `${Math.round(data.fat * 9 / data.dailyCal * 100)}%` }} />
+        </div>
+        <div className="sq-macros__legend">
+          <div className="sq-macros__item"><span className="sq-dot sq-dot--protein" /> Protein {data.protein}g</div>
+          <div className="sq-macros__item"><span className="sq-dot sq-dot--carbs" /> Carbs {data.carbs}g</div>
+          <div className="sq-macros__item"><span className="sq-dot sq-dot--fat" /> Fat {data.fat}g</div>
+        </div>
+      </div>
+
+      <div className="sq-calorie">
+        <div className="sq-calorie__inner">
+          <div>
+            <span className="sq-calorie__label">Recommended Daily Intake</span>
+            <span className="sq-calorie__value">{data.dailyCal} kcal</span>
+          </div>
+        </div>
+      </div>
+
+      <button className="sq-btn sq-btn--restart" onClick={onRestart} type="button">
+        Retake Quiz
+      </button>
+    </div>
+  );
+}
+
+// ============================================
+// MAIN COMPONENT
+// ============================================
+export default function FitnessQuiz() {
+  const [currentStep, setCurrentStep] = useState(0);
+  const [answers, setAnswers] = useState({
+    frequency: 3,
+    height: 170,
+    weight: 70,
+    targetWeight: 65,
+    age: 25,
+    struggles: [],
+  });
+  const [showResults, setShowResults] = useState(false);
+
+  const step = STEPS[currentStep];
+  const totalSteps = STEPS.length;
+
+  const updateAnswer = useCallback((key, value) => {
+    setAnswers((prev) => ({ ...prev, [key]: value }));
+  }, []);
+
+  const handleChipSelect = useCallback((option) => {
+    if (step.type === 'multi') {
+      setAnswers((prev) => {
+        const arr = prev[step.id] || [];
+        return {
+          ...prev,
+          [step.id]: arr.includes(option)
+            ? arr.filter((x) => x !== option)
+            : [...arr, option],
+        };
+      });
+    } else {
+      updateAnswer(step.id, option);
+    }
+  }, [step, updateAnswer]);
+
+  const canProceed = useMemo(() => {
+    const val = answers[step.id];
+    if (step.type === 'single') return !!val;
+    if (step.type === 'multi') return (val || []).length > 0;
+    return true; // number & slider always have defaults
+  }, [answers, step]);
+
+  const goNext = useCallback(() => {
+    if (currentStep < totalSteps - 1) {
+      setCurrentStep((s) => s + 1);
+    } else {
+      setShowResults(true);
+    }
+  }, [currentStep, totalSteps]);
+
+  const goBack = useCallback(() => {
+    if (showResults) {
+      setShowResults(false);
+    } else if (currentStep > 0) {
+      setCurrentStep((s) => s - 1);
+    }
+  }, [currentStep, showResults]);
+
+  const restart = useCallback(() => {
+    setCurrentStep(0);
+    setShowResults(false);
+    setAnswers({
+      frequency: 3,
+      height: 170,
+      weight: 70,
+      targetWeight: 65,
+      age: 25,
+      struggles: [],
+    });
+  }, []);
+
+  const results = useMemo(() => calculateResults(answers), [answers]);
+
+  // ============================================
+  // RENDER
+  // ============================================
+  return (
+    <div className="sq-wrapper">
+      <div className="sq-card">
+        {showResults ? (
+          <Results data={results} onRestart={restart} />
+        ) : (
+          <>
+            <ProgressBar current={currentStep} total={totalSteps} />
+
+            <div className="sq-body" key={currentStep}>
+              <h2 className="sq-question">{step.question}</h2>
+              {step.subtitle && <p className="sq-subtitle">{step.subtitle}</p>}
+
+              <div className="sq-content">
+                {(step.type === 'single' || step.type === 'multi') && (
+                  <ChipSelector
+                    options={step.options}
+                    selected={answers[step.id]}
+                    onSelect={handleChipSelect}
+                    multi={step.type === 'multi'}
+                  />
+                )}
+                {step.type === 'number' && (
+                  <NumberInput
+                    value={answers[step.id] ?? step.defaultValue}
+                    onChange={(v) => updateAnswer(step.id, v)}
+                    min={step.min}
+                    max={step.max}
+                    unit={step.unit}
+                  />
+                )}
+                {step.type === 'slider' && (
+                  <SliderInput
+                    value={answers[step.id] ?? step.defaultValue}
+                    onChange={(v) => updateAnswer(step.id, v)}
+                    min={step.min}
+                    max={step.max}
+                    unit={step.unit}
+                    step={step.step}
+                  />
+                )}
+              </div>
+            </div>
+
+            <div className="sq-nav">
+              <button
+                className="sq-btn sq-btn--back"
+                onClick={goBack}
+                disabled={currentStep === 0}
+                type="button"
+              >
+                Back
+              </button>
+              <button
+                className="sq-btn sq-btn--next"
+                onClick={goNext}
+                disabled={!canProceed}
+                type="button"
+              >
+                {currentStep === totalSteps - 1 ? 'See Results' : 'Next'}
+              </button>
+            </div>
+          </>
+        )}
+      </div>
+    </div>
   );
 }

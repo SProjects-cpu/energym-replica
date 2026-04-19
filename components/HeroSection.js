@@ -8,7 +8,8 @@ export default function HeroSection() {
       <video className="hero__video" autoPlay muted playsInline loop poster="/images/hero-poster.jpg">
         <source src="https://cdn.shopify.com/videos/c/o/v/f1192faf982b4bd9bb2fed6b66bb281f.mp4" type="video/mp4" />
       </video>
-      <div className="hero__overlay" style={{ background: "rgba(0,0,0,0.4)" }} />
+      <div className="hero__overlay" style={{ background: 'rgba(0,0,0,0.45)' }} />
+      <link rel="stylesheet" href="/quiz.css" />
       <FitnessQuiz />
     </section>
   );
