@@ -66,23 +66,33 @@ body.quiz-page {
   position: relative;
 }
 
-/* --- Animated Background Particles --- */
-body.quiz-page::before {
-  content: '';
-  position: fixed;
-  top: 0; left: 0;
-  width: 100%; height: 100%;
-  background:
-    radial-gradient(circle at 20% 50%, rgba(0, 170, 19, 0.04) 0%, transparent 50%),
-    radial-gradient(circle at 80% 20%, rgba(0, 170, 19, 0.03) 0%, transparent 50%),
-    radial-gradient(circle at 50% 80%, rgba(0, 170, 19, 0.02) 0%, transparent 50%);
-  pointer-events: none;
-  z-index: 0;
+/* --- Embedded Hero Wrapper --- */
+.quiz-hero-wrapper {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  padding: 8vh 1rem 4rem 5%;
+  display: flex;
+  align-items: center; /* Vertically centered like grind.nl */
+  justify-content: flex-start;
+  z-index: 20;
+  pointer-events: none; /* Let video clicks pass if any */
+}
+
+@media (max-width: 768px) {
+  .quiz-hero-wrapper {
+    align-items: center;
+    justify-content: center;
+    padding: 0 1rem;
+    padding-top: 10vh;
+  }
 }
 
 /* --- Ghost Text --- */
 .ghost-text {
-  position: fixed;
+  position: absolute;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
@@ -99,11 +109,12 @@ body.quiz-page::before {
 /* --- Quiz Container --- */
 .quiz-container {
   width: 100%;
-  max-width: 680px;
-  margin: 2rem auto;
+  max-width: 600px;
+  margin: 0;
   padding: 0 1rem;
   position: relative;
-  z-index: 1;
+  z-index: 10;
+  pointer-events: auto; /* Enable clicks inside */
 }
 
 /* --- Header / Branding --- */
