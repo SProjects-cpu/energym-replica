@@ -16,7 +16,7 @@ export default function FitnessQuiz() {
 
   <div className="quiz-container">
 
-    <!-- Header -->
+    {/* Header */}
     <div className="quiz-header">
       <div className="quiz-logo">
         <span className="logo-accent">STRIVER</span> FITNESS QUIZ
@@ -24,7 +24,7 @@ export default function FitnessQuiz() {
       <a href="energym_home.html" className="quiz-back-home">← Back to Home</a>
     </div>
 
-    <!-- Progress Bar -->
+    {/* Progress Bar */}
     <div className="quiz-progress" id="quizProgress">
       <div className="progress-info">
         <span className="step-label" id="stepLabel">STEP 1</span>
@@ -35,17 +35,17 @@ export default function FitnessQuiz() {
       </div>
     </div>
 
-    <!-- Quiz Card -->
+    {/* Quiz Card */}
     <div className="quiz-card" id="quizCard">
 
-      <!-- Generating Overlay -->
+      {/* Generating Overlay */}
       <div className="generating-overlay" id="generatingOverlay">
         <div className="spinner"></div>
         <div className="generating-text">Generating Your Timeline</div>
         <div className="generating-sub">Analyzing your data...</div>
       </div>
 
-      <!-- STEP 1: Fitness Goal -->
+      {/* STEP 1: Fitness Goal */}
       <div className="quiz-card-inner">
         <div className="step active" id="step-1" data-step="1">
           <h2 className="step-question">What's your fitness goal?</h2>
@@ -60,7 +60,7 @@ export default function FitnessQuiz() {
           <div className="validation-msg" id="val-1"></div>
         </div>
 
-        <!-- STEP 2: Gender -->
+        {/* STEP 2: Gender */}
         <div className="step" id="step-2" data-step="2">
           <h2 className="step-question">What's your gender?</h2>
           <p className="step-subtitle">This helps us calculate accurate projections.</p>
@@ -72,7 +72,7 @@ export default function FitnessQuiz() {
           <div className="validation-msg" id="val-2"></div>
         </div>
 
-        <!-- STEP 3: Age -->
+        {/* STEP 3: Age */}
         <div className="step" id="step-3" data-step="3">
           <h2 className="step-question">How old are you?</h2>
           <p className="step-subtitle">Age affects metabolism and training capacity.</p>
@@ -87,7 +87,7 @@ export default function FitnessQuiz() {
           <div className="validation-msg" id="val-3"></div>
         </div>
 
-        <!-- STEP 4: Height -->
+        {/* STEP 4: Height */}
         <div className="step" id="step-4" data-step="4">
           <h2 className="step-question">What's your height?</h2>
           <div className="slider-group">
@@ -103,7 +103,7 @@ export default function FitnessQuiz() {
           </div>
         </div>
 
-        <!-- STEP 5: Current Weight -->
+        {/* STEP 5: Current Weight */}
         <div className="step" id="step-5" data-step="5">
           <h2 className="step-question">What's your current weight?</h2>
           <div className="slider-group">
@@ -119,7 +119,7 @@ export default function FitnessQuiz() {
           </div>
         </div>
 
-        <!-- STEP 6: Target Weight -->
+        {/* STEP 6: Target Weight */}
         <div className="step" id="step-6" data-step="6">
           <h2 className="step-question">What's your target weight?</h2>
           <p className="step-subtitle">Where do you want to be in 3 months?</p>
@@ -136,7 +136,7 @@ export default function FitnessQuiz() {
           </div>
         </div>
 
-        <!-- STEP 7: Experience Level -->
+        {/* STEP 7: Experience Level */}
         <div className="step" id="step-7" data-step="7">
           <h2 className="step-question">What's your experience level?</h2>
           <p className="step-subtitle">Be honest — it helps us set realistic targets.</p>
@@ -148,7 +148,7 @@ export default function FitnessQuiz() {
           <div className="validation-msg" id="val-7"></div>
         </div>
 
-        <!-- STEP 8: Training Days -->
+        {/* STEP 8: Training Days */}
         <div className="step" id="step-8" data-step="8">
           <h2 className="step-question">How many days per week can you train?</h2>
           <div className="chips-group" data-field="trainingDays">
@@ -162,7 +162,7 @@ export default function FitnessQuiz() {
           <div className="validation-msg" id="val-8"></div>
         </div>
 
-        <!-- STEP 9: Session Duration -->
+        {/* STEP 9: Session Duration */}
         <div className="step" id="step-9" data-step="9">
           <h2 className="step-question">How long per workout session?</h2>
           <div className="chips-group" data-field="sessionDuration">
@@ -175,7 +175,7 @@ export default function FitnessQuiz() {
           <div className="validation-msg" id="val-9"></div>
         </div>
 
-        <!-- STEP 10: Dietary Preferences -->
+        {/* STEP 10: Dietary Preferences */}
         <div className="step" id="step-10" data-step="10">
           <h2 className="step-question">Any dietary preferences?</h2>
           <p className="step-subtitle">Select all that apply.</p>
@@ -192,7 +192,7 @@ export default function FitnessQuiz() {
         </div>
       </div>
 
-      <!-- Navigation -->
+      {/* Navigation */}
       <div className="quiz-nav" id="quizNav">
         <button className="btn-back" id="btnBack" disabled>
           ← Back
@@ -205,7 +205,7 @@ export default function FitnessQuiz() {
         </button>
       </div>
 
-      <!-- RESULTS -->
+      {/* RESULTS */}
       <div className="results-container" id="resultsContainer">
 
         <div className="results-header">
@@ -213,7 +213,7 @@ export default function FitnessQuiz() {
           <p>Here's your personalized projection based on your answers.</p>
         </div>
 
-        <!-- Summary Metrics -->
+        {/* Summary Metrics */}
         <div className="metrics-row">
           <div className="metric-card">
             <div className="metric-label">Current</div>
@@ -232,7 +232,7 @@ export default function FitnessQuiz() {
           </div>
         </div>
 
-        <!-- Milestones -->
+        {/* Milestones */}
         <div className="milestones-row">
           <div className="milestone">
             <div className="milestone-week">Week 4</div>
@@ -251,7 +251,7 @@ export default function FitnessQuiz() {
           </div>
         </div>
 
-        <!-- Chart -->
+        {/* Chart */}
         <div className="chart-section">
           <h3 className="chart-title">Projected Progress</h3>
           <div className="chart-wrapper">
@@ -263,7 +263,7 @@ export default function FitnessQuiz() {
           </div>
         </div>
 
-        <!-- Calorie Estimate -->
+        {/* Calorie Estimate */}
         <div className="calorie-box">
           <div className="calorie-card">
             <div className="calorie-info">
@@ -277,7 +277,7 @@ export default function FitnessQuiz() {
           </div>
         </div>
 
-        <!-- Breakdown -->
+        {/* Breakdown */}
         <div className="breakdown-grid">
           <div className="breakdown-panel">
             <h4>Macro Split</h4>
@@ -308,12 +308,12 @@ export default function FitnessQuiz() {
           <div className="breakdown-panel">
             <h4>Weekly Schedule</h4>
             <ul className="workout-list" id="workoutList">
-              <!-- Filled by JS -->
+              {/* Filled by JS */}
             </ul>
           </div>
         </div>
 
-        <!-- CTA -->
+        {/* CTA */}
         <div className="cta-section">
           <a href="#" className="cta-btn" id="ctaDownload">
             🚀 Start Your Journey with Striver
