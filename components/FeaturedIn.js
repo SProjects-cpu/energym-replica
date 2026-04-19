@@ -17,13 +17,7 @@ export default function FeaturedIn() {
         <br /><br />
         Train for performance. Train for longevity. Train for the planet.
       </p>
-      <span className="gradient-sep fade-up" />
-      <h4 className="featured-in__label fade-up">As featured by</h4>
-      <div className="featured-in__logos fade-up">
-        {logos.map((logo) => (
-          <img key={logo.name} src={logo.src} alt={logo.name} loading="lazy" />
-        ))}
-      </div>
+      {/* As featured by section removed per user request */}
     </section>
   );
 }
