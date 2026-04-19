@@ -434,6 +434,52 @@ function Results({ data, onRestart }) {
 }
 
 // ============================================
+// BACKGROUND COMPONENT
+// ============================================
+function QuizBackground() {
+  return (
+    <div className="sq-wizard-bg">
+      <div className="sq-bg-wrap">
+        <span className="sq-w-large" style={{top: '8%', left: '2%'}}>PRECISION</span>
+        <span className="sq-w-med" style={{top: '12%', left: '48%'}}>EFFICIENCY</span>
+        <span className="sq-w-small" style={{top: '5%', left: '80%'}}>STAMINA</span>
+        <span className="sq-w-small" style={{top: '14%', left: '82%'}}>POWER</span>
+        
+        <span className="sq-w-small" style={{top: '25%', left: '5%'}}>STRENGTH</span>
+        <span className="sq-w-med" style={{top: '26%', left: '22%'}}>TECHNOLOGY</span>
+        <span className="sq-w-small" style={{top: '25%', left: '75%'}}>RESILIENCE</span>
+
+        <span className="sq-w-large" style={{top: '38%', left: '2%'}}>FITNESS</span>
+        <span className="sq-w-striver" style={{top: '42%', left: '32%'}}>STRIVER</span>
+        <span className="sq-w-med" style={{top: '40%', left: '78%'}}>TECHNOLOGY</span>
+
+        <span className="sq-w-large" style={{top: '65%', left: '4%'}}>PERFORMANCE</span>
+        <span className="sq-w-med" style={{top: '68%', left: '62%'}}>INNOVATION</span>
+        <span className="sq-w-small" style={{top: '65%', left: '90%'}}>SPEED</span>
+
+        <span className="sq-w-small" style={{top: '85%', left: '8%'}}>ENDURANCE</span>
+        <span className="sq-w-large" style={{top: '85%', left: '30%'}}>SPEED</span>
+        <span className="sq-w-med" style={{top: '86%', left: '72%'}}>STRENGTH</span>
+        
+        {/* Decorative outlined tech elements */}
+        <svg className="sq-bg-deco sq-bg-deco--1" style={{top: '18%', left: '15%'}} width="120" height="120" viewBox="0 0 100 100" fill="none">
+          <circle cx="50" cy="50" r="40" stroke="rgba(255,255,255,0.05)" strokeWidth="2" />
+          <circle cx="50" cy="50" r="20" stroke="rgba(255,255,255,0.05)" strokeWidth="2" />
+          <path d="M50 0v100M0 50h100" stroke="rgba(255,255,255,0.05)" strokeWidth="2" />
+        </svg>
+        <svg className="sq-bg-deco sq-bg-deco--2" style={{top: '55%', left: '10%'}} width="150" height="150" viewBox="0 0 100 100" fill="none">
+          <rect x="20" y="20" width="60" height="60" stroke="rgba(255,255,255,0.05)" strokeWidth="2" />
+          <path d="M20 20L80 80M20 80L80 20" stroke="rgba(255,255,255,0.05)" strokeWidth="2" />
+        </svg>
+        <svg className="sq-bg-deco sq-bg-deco--3" style={{top: '75%', left: '85%'}} width="100" height="100" viewBox="0 0 100 100" fill="none">
+          <polygon points="50,10 90,90 10,90" stroke="rgba(255,255,255,0.05)" strokeWidth="2" />
+        </svg>
+      </div>
+    </div>
+  );
+}
+
+// ============================================
 // MAIN COMPONENT
 // Step 0 = hero overlay (compact card)
 // Step 1+ = full-screen wizard overlay
@@ -564,6 +610,7 @@ export default function FitnessQuiz() {
   // ==============================
   return (
     <div className="sq-wizard-overlay">
+      <QuizBackground />
       <div className="sq-wizard">
         <div className="sq-wizard__inner">
           {showResults ? (

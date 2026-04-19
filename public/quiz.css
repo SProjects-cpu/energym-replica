@@ -124,7 +124,7 @@
   left: 0;
   width: 100vw;
   height: 100vh;
-  background: #050505;
+  background: #111111; /* Slightly lighter than pitch black so dark card pops */
   z-index: 9999;
   display: flex;
   align-items: center;
@@ -137,6 +137,51 @@
 @keyframes sq-fadeIn {
   from { opacity: 0; }
   to { opacity: 1; }
+}
+
+/* ============================================
+   WIZARD BACKGROUND (WORD CLOUD)
+   ============================================ */
+.sq-wizard-bg {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  z-index: 0; /* Behind the wizard card */
+  pointer-events: none;
+  opacity: 0.9;
+}
+
+.sq-bg-wrap {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 1920px;
+  height: 1080px;
+  transform: translate(-50%, -50%);
+  user-select: none;
+}
+
+.sq-bg-wrap span {
+  position: absolute;
+  font-family: 'Oswald', sans-serif;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.04);
+  font-weight: 700;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.sq-w-large { font-size: 160px; color: rgba(255, 255, 255, 0.06); letter-spacing: -2px; }
+.sq-w-med { font-size: 100px; color: rgba(255, 255, 255, 0.05); }
+.sq-w-small { font-size: 60px; color: rgba(255, 255, 255, 0.04); }
+.sq-w-striver { font-size: 240px; color: rgba(255, 255, 255, 0.08); letter-spacing: -4px; font-weight: 800 !important; }
+
+.sq-bg-deco {
+  position: absolute;
+  opacity: 0.6;
 }
 
 .sq-wizard {
