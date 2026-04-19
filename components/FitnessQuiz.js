@@ -1,6 +1,9 @@
 'use client';
 
 import React, { useState, useCallback, useMemo } from 'react';
+import dynamic from 'next/dynamic';
+
+const Body = dynamic(() => import('react-muscle-highlighter').then(mod => mod.default), { ssr: false });
 
 // ============================================
 // QUIZ DATA
@@ -87,6 +90,13 @@ const STEPS = [
     options: ['Male', 'Female'],
   },
   {
+    id: 'targetMuscles',
+    question: 'Which areas do you want to focus on?',
+    subtitle: 'Select all the body parts you want to improve.',
+    type: 'multi',
+    options: ['Chest', 'Arms', 'Shoulders', 'Abs', 'Back', 'Legs', 'Glutes', 'Full Body'],
+  },
+  {
     id: 'budget',
     question: 'What is your monthly budget?',
     subtitle: 'We will recommend options that fit your budget.',
@@ -94,6 +104,38 @@ const STEPS = [
     options: ['Under $50', '$50 - $100', '$100 - $200', '$200+'],
   },
 ];
+
+// ============================================
+// MUSCLE MAPPING
+// ============================================
+const MUSCLE_MAP = {
+  'Chest': [{ slug: 'chest', intensity: 1 }],
+  'Arms': [{ slug: 'biceps', intensity: 1 }, { slug: 'triceps', intensity: 1 }, { slug: 'forearm', intensity: 1 }],
+  'Shoulders': [{ slug: 'deltoids', intensity: 1 }],
+  'Abs': [{ slug: 'abs', intensity: 1 }, { slug: 'obliques', intensity: 1 }],
+  'Back': [{ slug: 'upper-back', intensity: 1 }, { slug: 'lower-back', intensity: 1 }, { slug: 'trapezius', intensity: 1 }],
+  'Legs': [{ slug: 'quadriceps', intensity: 1 }, { slug: 'hamstring', intensity: 1 }, { slug: 'calves', intensity: 1 }],
+  'Glutes': [{ slug: 'gluteal', intensity: 1 }],
+  'Full Body': [
+    { slug: 'chest', intensity: 1 }, { slug: 'biceps', intensity: 1 }, { slug: 'deltoids', intensity: 1 },
+    { slug: 'abs', intensity: 1 }, { slug: 'quadriceps', intensity: 1 }, { slug: 'upper-back', intensity: 1 },
+    { slug: 'gluteal', intensity: 1 }, { slug: 'hamstring', intensity: 1 }, { slug: 'triceps', intensity: 1 },
+  ],
+};
+
+function getMuscleData(targetMuscles) {
+  const map = new Map();
+  (targetMuscles || []).forEach(m => {
+    (MUSCLE_MAP[m] || []).forEach(p => {
+      if (map.has(p.slug)) {
+        map.get(p.slug).intensity = Math.min(map.get(p.slug).intensity + 1, 3);
+      } else {
+        map.set(p.slug, { ...p });
+      }
+    });
+  });
+  return Array.from(map.values());
+}
 
 // ============================================
 // RESULTS CALCULATOR
@@ -123,13 +165,23 @@ function calculateResults(answers) {
   const fat = Math.round(dailyCal * 0.25 / 9);
   const carbs = Math.round((dailyCal - protein * 4 - fat * 9) / 4);
 
-  const milestones = [
-    { week: 4, label: 'Foundation phase', weight: Math.round((weight - weeklyChange * 4) * 10) / 10 },
-    { week: 8, label: 'Progress phase', weight: Math.round((weight - weeklyChange * 8) * 10) / 10 },
-    { week: 12, label: 'Goal reached', weight: Math.round((weight - weeklyChange * 12) * 10) / 10 },
+  // Timeline points for the graph (Today, W4, W8, W12)
+  const timeline = [
+    { label: 'Today', weight: weight },
+    { label: 'Week 4', weight: Math.round((weight - weeklyChange * 4) * 10) / 10 },
+    { label: 'Week 8', weight: Math.round((weight - weeklyChange * 8) * 10) / 10 },
+    { label: 'Week 12', weight: Math.round((weight - weeklyChange * 12) * 10) / 10 },
   ];
 
-  return { dailyCal, protein, carbs, fat, bfEstimate, milestones, weight, targetWeight };
+  const milestones = [
+    { week: 4, label: 'Foundation phase', weight: timeline[1].weight },
+    { week: 8, label: 'Progress phase', weight: timeline[2].weight },
+    { week: 12, label: 'Goal reached', weight: timeline[3].weight },
+  ];
+
+  const muscleData = getMuscleData(answers.targetMuscles);
+
+  return { dailyCal, protein, carbs, fat, bfEstimate, milestones, weight, targetWeight, timeline, muscleData, gender };
 }
 
 // ============================================
@@ -221,6 +273,132 @@ function SliderInput({ value, onChange, min, max, unit, step = 1 }) {
   );
 }
 
+// ============================================
+// WEIGHT TIMELINE GRAPH (SVG)
+// ============================================
+function WeightTimelineGraph({ timeline }) {
+  const W = 400, H = 200, PAD = 50, PADT = 30, PADB = 40;
+  const weights = timeline.map(p => p.weight);
+  const minW = Math.min(...weights) - 2;
+  const maxW = Math.max(...weights) + 2;
+  const range = maxW - minW || 1;
+
+  const points = timeline.map((p, i) => ({
+    x: PAD + (i / (timeline.length - 1)) * (W - PAD * 2),
+    y: PADT + ((maxW - p.weight) / range) * (H - PADT - PADB),
+    ...p,
+  }));
+
+  const pathD = points.map((p, i) => {
+    if (i === 0) return `M ${p.x} ${p.y}`;
+    const prev = points[i - 1];
+    const cpx1 = prev.x + (p.x - prev.x) * 0.4;
+    const cpx2 = prev.x + (p.x - prev.x) * 0.6;
+    return `C ${cpx1} ${prev.y}, ${cpx2} ${p.y}, ${p.x} ${p.y}`;
+  }).join(' ');
+
+  return (
+    <div className="sq-graph">
+      <h3 className="sq-graph__title">Projected Progress</h3>
+      <svg viewBox={`0 0 ${W} ${H}`} className="sq-graph__svg" preserveAspectRatio="xMidYMid meet">
+        <defs>
+          <linearGradient id="lineGrad" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0%" stopColor="#00AA13" />
+            <stop offset="100%" stopColor="#00dd18" />
+          </linearGradient>
+          <linearGradient id="areaGrad" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="rgba(0,170,19,0.25)" />
+            <stop offset="100%" stopColor="rgba(0,170,19,0)" />
+          </linearGradient>
+        </defs>
+        {/* Grid lines */}
+        {[0, 1, 2, 3].map(i => {
+          const y = PADT + (i / 3) * (H - PADT - PADB);
+          const val = Math.round(maxW - (i / 3) * range);
+          return (
+            <g key={i}>
+              <line x1={PAD} y1={y} x2={W - PAD} y2={y} stroke="rgba(255,255,255,0.06)" strokeWidth="1" />
+              <text x={PAD - 8} y={y + 4} textAnchor="end" fill="rgba(255,255,255,0.3)" fontSize="10" fontFamily="Inter">{val}</text>
+            </g>
+          );
+        })}
+        {/* Area fill */}
+        <path d={`${pathD} L ${points[points.length - 1].x} ${H - PADB} L ${points[0].x} ${H - PADB} Z`} fill="url(#areaGrad)" />
+        {/* Line */}
+        <path d={pathD} fill="none" stroke="url(#lineGrad)" strokeWidth="3" strokeLinecap="round" />
+        {/* Points + labels */}
+        {points.map((p, i) => (
+          <g key={i}>
+            <circle cx={p.x} cy={p.y} r="5" fill="#0a0a0a" stroke="#00AA13" strokeWidth="2.5" />
+            <text x={p.x} y={p.y - 12} textAnchor="middle" fill="#ffffff" fontSize="12" fontWeight="700" fontFamily="Inter">
+              {p.weight} kg
+            </text>
+            <text x={p.x} y={H - PADB + 18} textAnchor="middle" fill="rgba(255,255,255,0.4)" fontSize="10" fontFamily="Inter">
+              {p.label}
+            </text>
+          </g>
+        ))}
+      </svg>
+    </div>
+  );
+}
+
+// ============================================
+// MUSCLE HIGHLIGHTER
+// ============================================
+function MuscleHighlighter({ muscleData, gender }) {
+  if (!muscleData || muscleData.length === 0) return null;
+
+  // Check if we need back view (for back/glutes/hamstring)
+  const backSlugs = ['upper-back', 'lower-back', 'trapezius', 'gluteal', 'hamstring', 'calves'];
+  const hasBack = muscleData.some(m => backSlugs.includes(m.slug));
+  const frontData = muscleData.filter(m => !backSlugs.includes(m.slug));
+  const backData = muscleData.filter(m => backSlugs.includes(m.slug));
+
+  return (
+    <div className="sq-muscle">
+      <h3 className="sq-muscle__title">Target Muscle Groups</h3>
+      <p className="sq-muscle__subtitle">Highlighted areas show your focus zones</p>
+      <div className="sq-muscle__body">
+        <div className="sq-muscle__view">
+          <span className="sq-muscle__label">Front</span>
+          {Body && (
+            <Body
+              data={frontData.length > 0 ? frontData : []}
+              side="front"
+              gender={gender === 'Female' ? 'female' : 'male'}
+              scale={0.9}
+              border="none"
+              colors={['#00AA13', '#00cc16', '#00ff1a']}
+              defaultFill="rgba(255,255,255,0.08)"
+              defaultStroke="rgba(255,255,255,0.04)"
+              defaultStrokeWidth={0.5}
+            />
+          )}
+        </div>
+        {hasBack && (
+          <div className="sq-muscle__view">
+            <span className="sq-muscle__label">Back</span>
+            {Body && (
+              <Body
+                data={backData}
+                side="back"
+                gender={gender === 'Female' ? 'female' : 'male'}
+                scale={0.9}
+                border="none"
+                colors={['#00AA13', '#00cc16', '#00ff1a']}
+                defaultFill="rgba(255,255,255,0.08)"
+                defaultStroke="rgba(255,255,255,0.04)"
+                defaultStrokeWidth={0.5}
+              />
+            )}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 function Results({ data, onRestart }) {
   return (
     <div className="sq-results">
@@ -244,6 +422,12 @@ function Results({ data, onRestart }) {
           <span className="sq-metric__unit">%</span>
         </div>
       </div>
+
+      {/* Weight Timeline Graph */}
+      <WeightTimelineGraph timeline={data.timeline} />
+
+      {/* Muscle Highlighter */}
+      <MuscleHighlighter muscleData={data.muscleData} gender={data.gender} />
 
       <div className="sq-milestones">
         {data.milestones.map((m) => (
@@ -296,6 +480,7 @@ export default function FitnessQuiz() {
     targetWeight: 65,
     age: 25,
     struggles: [],
+    targetMuscles: [],
   });
   const [showResults, setShowResults] = useState(false);
 
@@ -355,6 +540,7 @@ export default function FitnessQuiz() {
       targetWeight: 65,
       age: 25,
       struggles: [],
+    targetMuscles: [],
     });
   }, []);
 
