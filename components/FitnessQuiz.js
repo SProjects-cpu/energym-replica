@@ -101,7 +101,7 @@ const STEPS = [
     question: 'What is your monthly budget?',
     subtitle: 'We will recommend options that fit your budget.',
     type: 'single',
-    options: ['Under $50', '$50 - $100', '$100 - $200', '$200+'],
+    options: ['Under \u20B92,000', '\u20B92,000 - \u20B95,000', '\u20B95,000 - \u20B910,000', '\u20B910,000+'],
   },
 ];
 
@@ -120,6 +120,8 @@ const MUSCLE_MAP = {
     { slug: 'chest', intensity: 1 }, { slug: 'biceps', intensity: 1 }, { slug: 'deltoids', intensity: 1 },
     { slug: 'abs', intensity: 1 }, { slug: 'quadriceps', intensity: 1 }, { slug: 'upper-back', intensity: 1 },
     { slug: 'gluteal', intensity: 1 }, { slug: 'hamstring', intensity: 1 }, { slug: 'triceps', intensity: 1 },
+    { slug: 'calves', intensity: 1 }, { slug: 'forearm', intensity: 1 }, { slug: 'obliques', intensity: 1 },
+    { slug: 'lower-back', intensity: 1 }, { slug: 'trapezius', intensity: 1 },
   ],
 };
 
@@ -165,7 +167,6 @@ function calculateResults(answers) {
   const fat = Math.round(dailyCal * 0.25 / 9);
   const carbs = Math.round((dailyCal - protein * 4 - fat * 9) / 4);
 
-  // Timeline points for the graph (Today, W4, W8, W12)
   const timeline = [
     { label: 'Today', weight: weight },
     { label: 'Week 4', weight: Math.round((weight - weeklyChange * 4) * 10) / 10 },
@@ -227,24 +228,12 @@ function ChipSelector({ options, selected, onSelect, multi }) {
 function NumberInput({ value, onChange, min, max, unit }) {
   return (
     <div className="sq-number">
-      <button
-        className="sq-number__btn"
-        onClick={() => onChange(Math.max(min, value - 1))}
-        type="button"
-      >
-        −
-      </button>
+      <button className="sq-number__btn" onClick={() => onChange(Math.max(min, value - 1))} type="button">-</button>
       <div className="sq-number__display">
         <span className="sq-number__value">{value}</span>
         <span className="sq-number__unit">{unit}</span>
       </div>
-      <button
-        className="sq-number__btn"
-        onClick={() => onChange(Math.min(max, value + 1))}
-        type="button"
-      >
-        +
-      </button>
+      <button className="sq-number__btn" onClick={() => onChange(Math.min(max, value + 1))} type="button">+</button>
     </div>
   );
 }
@@ -258,15 +247,7 @@ function SliderInput({ value, onChange, min, max, unit, step = 1 }) {
       </div>
       <div className="sq-slider__track-wrap">
         <span className="sq-slider__bound">{min}</span>
-        <input
-          type="range"
-          className="sq-slider__input"
-          min={min}
-          max={max}
-          step={step}
-          value={value}
-          onChange={(e) => onChange(Number(e.target.value))}
-        />
+        <input type="range" className="sq-slider__input" min={min} max={max} step={step} value={value} onChange={(e) => onChange(Number(e.target.value))} />
         <span className="sq-slider__bound">{max}</span>
       </div>
     </div>
@@ -311,7 +292,6 @@ function WeightTimelineGraph({ timeline }) {
             <stop offset="100%" stopColor="rgba(0,170,19,0)" />
           </linearGradient>
         </defs>
-        {/* Grid lines */}
         {[0, 1, 2, 3].map(i => {
           const y = PADT + (i / 3) * (H - PADT - PADB);
           const val = Math.round(maxW - (i / 3) * range);
@@ -322,20 +302,13 @@ function WeightTimelineGraph({ timeline }) {
             </g>
           );
         })}
-        {/* Area fill */}
         <path d={`${pathD} L ${points[points.length - 1].x} ${H - PADB} L ${points[0].x} ${H - PADB} Z`} fill="url(#areaGrad)" />
-        {/* Line */}
         <path d={pathD} fill="none" stroke="url(#lineGrad)" strokeWidth="3" strokeLinecap="round" />
-        {/* Points + labels */}
         {points.map((p, i) => (
           <g key={i}>
             <circle cx={p.x} cy={p.y} r="5" fill="#0a0a0a" stroke="#00AA13" strokeWidth="2.5" />
-            <text x={p.x} y={p.y - 12} textAnchor="middle" fill="#ffffff" fontSize="12" fontWeight="700" fontFamily="Inter">
-              {p.weight} kg
-            </text>
-            <text x={p.x} y={H - PADB + 18} textAnchor="middle" fill="rgba(255,255,255,0.4)" fontSize="10" fontFamily="Inter">
-              {p.label}
-            </text>
+            <text x={p.x} y={p.y - 12} textAnchor="middle" fill="#ffffff" fontSize="12" fontWeight="700" fontFamily="Inter">{p.weight} kg</text>
+            <text x={p.x} y={H - PADB + 18} textAnchor="middle" fill="rgba(255,255,255,0.4)" fontSize="10" fontFamily="Inter">{p.label}</text>
           </g>
         ))}
       </svg>
@@ -344,16 +317,10 @@ function WeightTimelineGraph({ timeline }) {
 }
 
 // ============================================
-// MUSCLE HIGHLIGHTER
+// MUSCLE HIGHLIGHTER — ALWAYS FRONT + BACK
 // ============================================
 function MuscleHighlighter({ muscleData, gender }) {
   if (!muscleData || muscleData.length === 0) return null;
-
-  // Check if we need back view (for back/glutes/hamstring)
-  const backSlugs = ['upper-back', 'lower-back', 'trapezius', 'gluteal', 'hamstring', 'calves'];
-  const hasBack = muscleData.some(m => backSlugs.includes(m.slug));
-  const frontData = muscleData.filter(m => !backSlugs.includes(m.slug));
-  const backData = muscleData.filter(m => backSlugs.includes(m.slug));
 
   return (
     <div className="sq-muscle">
@@ -364,10 +331,10 @@ function MuscleHighlighter({ muscleData, gender }) {
           <span className="sq-muscle__label">Front</span>
           {Body && (
             <Body
-              data={frontData.length > 0 ? frontData : []}
+              data={muscleData}
               side="front"
               gender={gender === 'Female' ? 'female' : 'male'}
-              scale={0.9}
+              scale={1}
               border="none"
               colors={['#00AA13', '#00cc16', '#00ff1a']}
               defaultFill="rgba(255,255,255,0.08)"
@@ -376,29 +343,30 @@ function MuscleHighlighter({ muscleData, gender }) {
             />
           )}
         </div>
-        {hasBack && (
-          <div className="sq-muscle__view">
-            <span className="sq-muscle__label">Back</span>
-            {Body && (
-              <Body
-                data={backData}
-                side="back"
-                gender={gender === 'Female' ? 'female' : 'male'}
-                scale={0.9}
-                border="none"
-                colors={['#00AA13', '#00cc16', '#00ff1a']}
-                defaultFill="rgba(255,255,255,0.08)"
-                defaultStroke="rgba(255,255,255,0.04)"
-                defaultStrokeWidth={0.5}
-              />
-            )}
-          </div>
-        )}
+        <div className="sq-muscle__view">
+          <span className="sq-muscle__label">Back</span>
+          {Body && (
+            <Body
+              data={muscleData}
+              side="back"
+              gender={gender === 'Female' ? 'female' : 'male'}
+              scale={1}
+              border="none"
+              colors={['#00AA13', '#00cc16', '#00ff1a']}
+              defaultFill="rgba(255,255,255,0.08)"
+              defaultStroke="rgba(255,255,255,0.04)"
+              defaultStrokeWidth={0.5}
+            />
+          )}
+        </div>
       </div>
     </div>
   );
 }
 
+// ============================================
+// RESULTS
+// ============================================
 function Results({ data, onRestart }) {
   return (
     <div className="sq-results">
@@ -423,10 +391,7 @@ function Results({ data, onRestart }) {
         </div>
       </div>
 
-      {/* Weight Timeline Graph */}
       <WeightTimelineGraph timeline={data.timeline} />
-
-      {/* Muscle Highlighter */}
       <MuscleHighlighter muscleData={data.muscleData} gender={data.gender} />
 
       <div className="sq-milestones">
@@ -470,6 +435,8 @@ function Results({ data, onRestart }) {
 
 // ============================================
 // MAIN COMPONENT
+// Step 0 = hero overlay (compact card)
+// Step 1+ = full-screen wizard overlay
 // ============================================
 export default function FitnessQuiz() {
   const [currentStep, setCurrentStep] = useState(0);
@@ -486,6 +453,8 @@ export default function FitnessQuiz() {
 
   const step = STEPS[currentStep];
   const totalSteps = STEPS.length;
+  const isHeroMode = currentStep === 0 && !showResults;
+  const isWizardMode = currentStep > 0 || showResults;
 
   const updateAnswer = useCallback((key, value) => {
     setAnswers((prev) => ({ ...prev, [key]: value }));
@@ -511,7 +480,7 @@ export default function FitnessQuiz() {
     const val = answers[step.id];
     if (step.type === 'single') return !!val;
     if (step.type === 'multi') return (val || []).length > 0;
-    return true; // number & slider always have defaults
+    return true;
   }, [answers, step]);
 
   const goNext = useCallback(() => {
@@ -534,85 +503,88 @@ export default function FitnessQuiz() {
     setCurrentStep(0);
     setShowResults(false);
     setAnswers({
-      frequency: 3,
-      height: 170,
-      weight: 70,
-      targetWeight: 65,
-      age: 25,
-      struggles: [],
-    targetMuscles: [],
+      frequency: 3, height: 170, weight: 70, targetWeight: 65, age: 25,
+      struggles: [], targetMuscles: [],
     });
   }, []);
 
   const results = useMemo(() => calculateResults(answers), [answers]);
 
-  // ============================================
-  // RENDER
-  // ============================================
+  // Step content renderer
+  const renderStepContent = () => (
+    <>
+      {(step.type === 'single' || step.type === 'multi') && (
+        <ChipSelector options={step.options} selected={answers[step.id]} onSelect={handleChipSelect} multi={step.type === 'multi'} />
+      )}
+      {step.type === 'number' && (
+        <NumberInput value={answers[step.id] ?? step.defaultValue} onChange={(v) => updateAnswer(step.id, v)} min={step.min} max={step.max} unit={step.unit} />
+      )}
+      {step.type === 'slider' && (
+        <SliderInput value={answers[step.id] ?? step.defaultValue} onChange={(v) => updateAnswer(step.id, v)} min={step.min} max={step.max} unit={step.unit} step={step.step} />
+      )}
+    </>
+  );
+
+  // ==============================
+  // HERO MODE — Step 1 only
+  // ==============================
+  if (isHeroMode) {
+    return (
+      <div className="sq-hero-wrapper">
+        <div className="sq-hero-card">
+          <h2 className="sq-hero-question">{step.question}</h2>
+          <p className="sq-hero-subtitle">{step.subtitle}</p>
+          <div className="sq-hero-chips">
+            {step.options.map((opt) => (
+              <button
+                key={opt}
+                className={`sq-hero-chip ${answers[step.id] === opt ? 'sq-hero-chip--active' : ''}`}
+                onClick={() => updateAnswer(step.id, opt)}
+                type="button"
+              >
+                {opt}
+              </button>
+            ))}
+          </div>
+          <button
+            className="sq-hero-next"
+            onClick={goNext}
+            disabled={!canProceed}
+            type="button"
+          >
+            Next
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // ==============================
+  // WIZARD MODE — Steps 2+ and Results
+  // ==============================
   return (
-    <div className="sq-wrapper">
-      <div className="sq-card">
-        {showResults ? (
-          <Results data={results} onRestart={restart} />
-        ) : (
-          <>
-            <ProgressBar current={currentStep} total={totalSteps} />
-
-            <div className="sq-body" key={currentStep}>
-              <h2 className="sq-question">{step.question}</h2>
-              {step.subtitle && <p className="sq-subtitle">{step.subtitle}</p>}
-
-              <div className="sq-content">
-                {(step.type === 'single' || step.type === 'multi') && (
-                  <ChipSelector
-                    options={step.options}
-                    selected={answers[step.id]}
-                    onSelect={handleChipSelect}
-                    multi={step.type === 'multi'}
-                  />
-                )}
-                {step.type === 'number' && (
-                  <NumberInput
-                    value={answers[step.id] ?? step.defaultValue}
-                    onChange={(v) => updateAnswer(step.id, v)}
-                    min={step.min}
-                    max={step.max}
-                    unit={step.unit}
-                  />
-                )}
-                {step.type === 'slider' && (
-                  <SliderInput
-                    value={answers[step.id] ?? step.defaultValue}
-                    onChange={(v) => updateAnswer(step.id, v)}
-                    min={step.min}
-                    max={step.max}
-                    unit={step.unit}
-                    step={step.step}
-                  />
-                )}
+    <div className="sq-wizard-overlay">
+      <div className="sq-wizard">
+        <div className="sq-wizard__inner">
+          {showResults ? (
+            <Results data={results} onRestart={restart} />
+          ) : (
+            <>
+              <ProgressBar current={currentStep} total={totalSteps} />
+              <div className="sq-body" key={currentStep}>
+                <h2 className="sq-question">{step.question}</h2>
+                {step.subtitle && <p className="sq-subtitle">{step.subtitle}</p>}
+                <div className="sq-content">{renderStepContent()}</div>
               </div>
-            </div>
-
-            <div className="sq-nav">
-              <button
-                className="sq-btn sq-btn--back"
-                onClick={goBack}
-                disabled={currentStep === 0}
-                type="button"
-              >
-                Back
-              </button>
-              <button
-                className="sq-btn sq-btn--next"
-                onClick={goNext}
-                disabled={!canProceed}
-                type="button"
-              >
-                {currentStep === totalSteps - 1 ? 'See Results' : 'Next'}
-              </button>
-            </div>
-          </>
-        )}
+              <div className="sq-nav">
+                <button className="sq-btn sq-btn--back" onClick={goBack} type="button">Back</button>
+                <button className="sq-btn sq-btn--next" onClick={goNext} disabled={!canProceed} type="button">
+                  {currentStep === totalSteps - 1 ? 'See Results' : 'Next'}
+                </button>
+              </div>
+            </>
+          )}
+        </div>
       </div>
     </div>
   );
